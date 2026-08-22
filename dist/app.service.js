@@ -10,7 +10,10 @@ exports.AppService = void 0;
 const common_1 = require("@nestjs/common");
 let AppService = class AppService {
     getHello() {
-        return 'Social Circle App By Sohrab';
+        console.log('[AppService] getHello() called');
+        const message = 'Social Circle App By Sohrab';
+        console.log('[AppService] Returning message:', message);
+        return message;
     }
 };
 exports.AppService = AppService;
