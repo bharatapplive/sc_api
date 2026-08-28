@@ -1,5 +1,5 @@
 import * as mongoose from 'mongoose';
-
+//step 3 Collection/table sechma has been created
 export const AuthSchema = new mongoose.Schema({
   firstName: { type: String, required: true, minlength: 3 },
   lastName: { type: String, required: true, minlength: 3 },
@@ -13,7 +13,7 @@ export const AuthSchema = new mongoose.Schema({
     enum: ['admin', 'user'],
     default: 'user',
   },
-  active: { type: Boolean, required: true, default: true },
+  isActive: { type: Boolean, required: true, default: true },
   createdAt: { type: Date, default: Date.now },
 });
 
@@ -25,6 +25,6 @@ export interface AuthModel extends mongoose.Document {
   mobile: string;
   password: string;
   role: string;
-  active: boolean;
+  isActive: boolean;
   createdAt: Date;
 }

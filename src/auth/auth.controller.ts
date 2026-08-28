@@ -7,9 +7,15 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   
-  // step 2
+  // step 4 create api for user registration
   @Post('create')
   async create(@Body() requestData: any) {
     return this.authService.create(requestData);
   }
+
+  @Post('login')
+  async login(@Body() requestData: any) {
+    return this.authService.login(requestData);
+  }
+
 }

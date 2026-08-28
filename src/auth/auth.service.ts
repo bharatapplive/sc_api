@@ -9,7 +9,7 @@ export class AuthService {
     @InjectModel('Auth') private readonly authModel: Model<AuthModel>,
   ) {}
 
-  //step 5
+  //step 5 request DAta goes to auth service from Authcontroller
   async create(requestData: any): Promise<AuthModel> {
     // stp 6 new row added wuth data
     const createdAuth = new this.authModel({
@@ -17,7 +17,13 @@ export class AuthService {
       // Store the local path or URL
     });
 
-    //step 7 save a new row in db
+    //step 7 save a new row in collection/table and return the saved data
     return await createdAuth.save();
   }
+
+  async login(requestData: any) {    
+    let user = await this.authModel.findOne({ mobile: requestData.mobile, password:requestData.password  });  
+    return user;
+  }
+
 }
