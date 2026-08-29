@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
 import { PostService } from './post.service';
 
 @Controller('post')
@@ -22,5 +22,11 @@ export class PostController {
     @Post()
     async uploadPost(@Body() request: string){
         return await this.postServe.createPost(request);
+    }
+
+    @Patch(':id/like')
+    async updateLikes(@Param('id') id: string, @Body('userId') userId?: string){
+        // Call service method
+        return await this.postServe.toggleLike(id, userId);
     }
 }

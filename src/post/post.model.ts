@@ -2,9 +2,11 @@ import * as mongoo from 'mongoose';
 
 //#region Author Sub-schema..
 export const AuthorSchema = new mongoo.Schema({
-    userId:     { type: String, required: true, index: true },
-    authorName: { type: String, required: true, trim: true },
-    avatarUrl:  { type: String, default: 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png' },
+    userId:         { type: String, required: true, index: true },
+    authorName:     { type: String, required: true, trim: true },
+    avatarUrl:      { type: String, default: 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png' },
+    isFollowing:    { type: Boolean, default: false},
+    hasUnseenStory: { type: Boolean, default: false}
 },{   
     _id: false 
 });
@@ -13,6 +15,8 @@ export interface Author{
     userId:     string;
     authorName: string;
     avatarUrl:  string;
+    isFollowing?: boolean;
+    hasUnseenStory?: boolean;
 };
 //#endregion
 
@@ -47,6 +51,8 @@ export const PostSchema = new mongoo.Schema({
     audio:          { type: AudioSchema, default: null },
     caption:        { type: String, default: null, maxlength: 2200 },
     time:           { type: Date, default: Date.now },
+    likedBy:        [{ type: String }],
+    isLiked:        { type: Boolean, default: false},
     likesCount:     { type: Number, default: 0 },
     commentsCount:  { type: Number, default: 0 },
     repostsCount:   { type: Number, default: 0 },
@@ -68,6 +74,8 @@ export interface Post extends mongoo.Document{
     audio?:         Audio | null;
     caption?:       string | null;
     time?:          Date;
+    likedBy:        string[];
+    isLiked?:       boolean;
     likesCount?:    number;
     commentsCount?: number;
     repostsCount?:  number;

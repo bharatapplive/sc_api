@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, InternalServerErrorException } from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Post } from './post.model';
@@ -48,5 +48,36 @@ export class PostService {
     async getAllPost(page = 1, limit = 10){
         const skip = (page - 1) * limit;
         return await this.postModel.find().sort({createdAt: -1}).skip(skip).limit(limit).exec();
+    }
+
+    async toggleLike(postId: string, userId?: string){
+        
+        const hasLiked = (await this.postModel.findById(postId)).likedBy.includes(userId);
+        
+        const updatedDoc = await this.postModel.findByIdAndUpdate(
+            postId, 
+            hasLiked ? {
+                $pull:      {likedBy: userId},
+                $inc:       { likesCount: -1 },
+                $set:       {isLiked: false}
+            } : {
+                $addToSet:  { likedBy: userId },
+                $inc:       { likesCount: 1 },
+                $set:       { isLiked: true }
+            },
+            {new: true}
+        ).exec();
+
+        if (!updatedDoc) {
+            throw new NotFoundException(`Post with ID ${postId} not found`);
+        }
+
+        // Return formatted response with isLiked evaluated for this specific user
+        return {
+            ...updatedDoc,
+            isLiked: !hasLiked,
+            // Fix count if it drops below 0 due to old edge cases
+            likesCount: Math.max(0, updatedDoc.likesCount)
+        };
     }
 }
