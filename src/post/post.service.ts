@@ -24,12 +24,7 @@ export class PostService {
                 expiresAt,
             })
 
-            const savedPost = await newPost.save();
-
-            return{
-                message:'Post saved succesfully at',
-                _id: savedPost.author.userId
-            }
+            return await newPost.save();
 
         }catch(err){
             if (err instanceof BadRequestException) {
