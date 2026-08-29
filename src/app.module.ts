@@ -1,19 +1,29 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { LoginModule } from './login/login.module';
-
-import { AccountModule } from './account/account.module';
 import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
-    MongooseModule.forRoot('mongodb://localhost:27017', {
-      dbName: 'socialCircleDB',
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: ['.env', 'src/.env'],
     }),
-    LoginModule,
-    AccountModule,
+    MongooseModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: async (configService: ConfigService) => ({
+        uri: configService.get<string>('MONGODB_URI'),
+        dbName: configService.get<string>('DB_NAME') || 'SocialCircle',
+        serverApi: {
+          version: '1',
+          strict: true,
+          deprecationErrors: true,
+        },
+      }),
+      inject: [ConfigService],
+    }),
     AuthModule,
   ],
   controllers: [AppController],
