@@ -1,30 +1,29 @@
-import * as mongoose from 'mongoose';
+import * as mongo from 'mongoose';
 
-export const AuthSchema = new mongoose.Schema({
-  firstName: { type: String, required: true, minlength: 3 },
-  lastName: { type: String, required: true, minlength: 3 },
-  userName: { type: String, required: true, minlength: 3 },
-  email: { type: String, required: false },
-  mobile: { type: String, required: true, minlength: 10, maxLength: 10 },
-  password: { type: String, required: true, minlength: 6 },
-  role: {
-    type: String,
-    required: true,
-    enum: ['admin', 'user'],
-    default: 'user',
-  },
-  active: { type: Boolean, required: true, default: true },
-  createdAt: { type: Date, default: Date.now },
+export const AuthSchema = new mongo.Schema({
+    fullname:       { type: String, required: true, trim: true },
+    username:       { type: String, required: true, unique: true, lowercase: true, trim: true, index: true },
+    email:          { type: String, required: true, unique: true, lowercase: true, trim: true, index: true },
+    phoneNumber:          { type: String, required: true},
+    password:       { type: String, required: true },
+    avatarUrl:      { type: String, default: 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png' },
+    bio:            { type: String, default: '', maxlength: 150 },
+    otpCode:        {type: String, default: null},
+    otpExpireAt:    { type: Date, default: null},
+    isVerified:     { type: Boolean, default: false },
 });
 
-export interface AuthModel extends mongoose.Document {
-  firstName: string;
-  lastName: string;
-  userName: string;
-  email: string;
-  mobile: string;
-  password: string;
-  role: string;
-  active: boolean;
-  createdAt: Date;
+export interface Auth extends mongo.Document{
+    fullname: string;
+    username: string;
+    email: string;
+    phoneNumber: string;
+    password: string;
+    avatarUrl: string;
+    bio?: string;
+    isVerified: boolean;
+    otpCode: string;
+    otpExpireAt: string;
+    createdAt?: Date;
+    updatedAt?: Date;
 }

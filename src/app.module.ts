@@ -2,19 +2,18 @@ import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { LoginModule } from './login/login.module';
-
-import { AccountModule } from './account/account.module';
 import { AuthModule } from './auth/auth.module';
+import { PostModule } from './post/post.module';
+import { FollowModule } from './follow/follow.module';
 
 @Module({
   imports: [
     MongooseModule.forRoot('mongodb://localhost:27017', {
       dbName: 'socialCircleDB',
     }),
-    LoginModule,
-    AccountModule,
     AuthModule,
+    PostModule,
+    FollowModule
   ],
   controllers: [AppController],
   providers: [AppService],
