@@ -13,7 +13,7 @@ export const AuthSchema = new mongoose.Schema({
     enum: ['admin', 'user'],
     default: 'user',
   },
-  active: { type: Boolean, required: true, default: true },
+  isActive: { type: Boolean, required: true, default: true },
   createdAt: { type: Date, default: Date.now },
 });
 
