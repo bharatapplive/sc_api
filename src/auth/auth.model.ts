@@ -1,5 +1,5 @@
 import * as mongoose from 'mongoose';
-//step 3 Collection/table sechma has been created
+//step 3 Collection/table schema has been created
 export const AuthSchema = new mongoose.Schema({
   firstName: { type: String, required: true, minlength: 3 },
   lastName: { type: String, required: true, minlength: 3 },

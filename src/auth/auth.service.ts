@@ -7,14 +7,19 @@ import { Model } from 'mongoose';
 @Injectable()
 export class AuthService {
   constructor(
+
     @InjectModel('Auth') private readonly authModel: Model<AuthModel>,
     private readonly jwtService: JwtService,
   ) {}
 
+
   async create(requestData: any): Promise<AuthModel> {
+
     const createdAuth = new this.authModel({
       ...requestData,
+
     });
+
 
     return await createdAuth.save();
   }
