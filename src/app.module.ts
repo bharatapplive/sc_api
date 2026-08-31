@@ -9,6 +9,7 @@ import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
+// step 2 db connection string
     MongooseModule.forRoot('mongodb://localhost:27017', {
       dbName: 'socialCircleDB',
     }),
