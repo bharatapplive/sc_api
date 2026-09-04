@@ -3,10 +3,12 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { AuthSchema } from './auth.model';
+import { CloudinaryModule } from '../cloudinary/cloudinary.module';
 
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: 'Auth', schema: AuthSchema }]),
+    CloudinaryModule,
   ],
   controllers: [AuthController],
   providers: [AuthService]

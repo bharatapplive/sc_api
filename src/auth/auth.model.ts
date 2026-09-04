@@ -13,6 +13,7 @@ export const AuthSchema = new mongoose.Schema({
     enum: ['admin', 'user'],
     default: 'user',
   },
+  avatar: { type: String, required: false },
   active: { type: Boolean, required: true, default: true },
   createdAt: { type: Date, default: Date.now },
 });
@@ -24,6 +25,7 @@ export interface AuthModel extends mongoose.Document {
   email: string;
   mobile: string;
   password: string;
+  avatar?: string;
   role: string;
   active: boolean;
   createdAt: Date;
