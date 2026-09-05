@@ -1,5 +1,6 @@
-import { BadRequestException, Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Get, Param, Patch, Post, Req, Request, UseGuards } from '@nestjs/common';
 import { PostService } from './post.service';
+import { JwtAuthGuard } from 'src/jwt-auth/jwt-auth.guard';
 
 @Controller('post')
 export class PostController {
@@ -13,10 +14,10 @@ export class PostController {
         return await this.postServe.getAllPost();
     }
 
-    // Route becomes /post/:userId
-    @Get(':userId')
-    async fetchPostsByUserId(@Param('userId') userId: string) {
-        return await this.postServe.getPostsByUserId(userId);
+    @UseGuards(JwtAuthGuard)
+    @Get('user')
+    async fetchPostsByUserId(@Request() request: any){
+        return await this.postServe.getPostsByUserId(request.user);
     }
 
     @Post()
@@ -24,9 +25,10 @@ export class PostController {
         return await this.postServe.createPost(request);
     }
 
+    @UseGuards(JwtAuthGuard)
     @Patch(':id/like')
-    async updateLikes(@Param('id') id: string, @Body('userId') userId?: string){
+    async updateLikes(@Param('id') id: string, @Req() request: any){
         // Call service method
-        return await this.postServe.toggleLike(id, userId);
+        return await this.postServe.toggleLike(id, request.user);
     }
 }

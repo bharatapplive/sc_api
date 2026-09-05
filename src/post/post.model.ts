@@ -52,7 +52,6 @@ export const PostSchema = new mongoo.Schema({
     caption:        { type: String, default: null, maxlength: 2200 },
     time:           { type: Date, default: Date.now },
     likedBy:        [{ type: String }],
-    isLiked:        { type: Boolean, default: false},
     likesCount:     { type: Number, default: 0 },
     commentsCount:  { type: Number, default: 0 },
     repostsCount:   { type: Number, default: 0 },
@@ -75,7 +74,6 @@ export interface Post extends mongoo.Document{
     caption?:       string | null;
     time?:          Date;
     likedBy:        string[];
-    isLiked?:       boolean;
     likesCount?:    number;
     commentsCount?: number;
     repostsCount?:  number;

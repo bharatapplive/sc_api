@@ -13,7 +13,7 @@ import { FollowModule } from './follow/follow.module';
     }),
     AuthModule,
     PostModule,
-    FollowModule
+    FollowModule,
   ],
   controllers: [AppController],
   providers: [AppService],
