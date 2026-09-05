@@ -6,6 +6,7 @@ import { LoginModule } from './login/login.module';
 
 import { AccountModule } from './account/account.module';
 import { AuthModule } from './auth/auth.module';
+import { FeedModule } from './feed/feed.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { AuthModule } from './auth/auth.module';
     LoginModule,
     AccountModule,
     AuthModule,
+    FeedModule,
   ],
   controllers: [AppController],
   providers: [AppService],
