@@ -138,4 +138,5 @@ export class AuthService {
     async getAllData(){
         return await this.authModel.find();
     }
+
 }
