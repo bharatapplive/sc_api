@@ -1,17 +1,17 @@
 import { BadRequestException, ForbiddenException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { Post } from './post.model';
+import { Reel } from './reel.model';
 
 @Injectable()
-export class PostService {
+export class ReelService {
 
     constructor(
-        @InjectModel('Posts') private postModel: Model<Post>
+        @InjectModel('Reels') private reelModel: Model<Reel>
     ){}
 
     // 1. Create the Post...
-    async createPost(request: any){
+    async createReel(request: any){
         try{
             let expiresAt: Date | null = null;
             if (request.type === 'STORY') {
@@ -19,7 +19,7 @@ export class PostService {
                 expiresAt = new Date(Date.now() + TWENTY_FOUR_HOURS);
             }
 
-            const newPost = new this.postModel({
+            const newPost = new this.reelModel({
                 ...request,
                 expiresAt,
             })
@@ -35,11 +35,11 @@ export class PostService {
     }
 
     // 2. Delete the Post
-    async deletePost(id: any){
-        return this.postModel.findByIdAndDelete(id);
+    async deleteReel(id: any){
+        return this.reelModel.findByIdAndDelete(id);
     }
 
-    async getPostsByUserId(request: any, page = 1, limit = 10) {
+    async getReelsByUserId(request: any, page = 1, limit = 10) {
 
         const userId = request?.userId || request?.sub;
 
@@ -50,7 +50,7 @@ export class PostService {
         try{
             const skip = (page - 1) * limit;
             // Match against the schema field 'userId'
-            return await this.postModel.find({ 'author.userId': userId }).sort({createdAt: -1}).skip(skip).limit(limit).exec();
+            return await this.reelModel.find({ 'author.userId': userId }).sort({createdAt: -1}).skip(skip).limit(limit).exec();
 
         }catch(error){
             if (error instanceof NotFoundException || error instanceof ForbiddenException) {
@@ -60,9 +60,9 @@ export class PostService {
         }
     }
 
-    async getAllPost(page = 1, limit = 10){
+    async getAllReel(page = 1, limit =10){
         const skip = (page - 1) * limit;
-        return await this.postModel.find({type:'POST'}).sort({createdAt: -1}).skip(skip).limit(limit).exec();
+        return await this.reelModel.find({type:'REEL'}).sort({createdAt: -1}).skip(skip).limit(limit).exec();
     }
 
     async toggleLike(postId: string, userRequest: any){
@@ -71,9 +71,9 @@ export class PostService {
         if (!userId) {
             throw new ForbiddenException('User identity missing in request payload');
         }else{
-            const hasLiked = (await this.postModel.findById(postId)).likedBy.includes(userId);
+            const hasLiked = (await this.reelModel.findById(postId)).likedBy.includes(userId);
         
-            const updatedDoc = await this.postModel.findByIdAndUpdate(
+            const updatedDoc = await this.reelModel.findByIdAndUpdate(
                 postId, 
                 hasLiked ? {
                     $pull:      {likedBy: userId},

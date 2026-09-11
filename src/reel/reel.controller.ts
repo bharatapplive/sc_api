@@ -1,39 +1,38 @@
 import { BadRequestException, Body, Controller, Delete, Get, Param, Patch, Post, Req, Request, UseGuards } from '@nestjs/common';
-import { PostService } from './post.service';
+import { ReelService } from './reel.service';
 import { JwtAuthGuard } from 'src/jwt-auth/jwt-auth.guard';
 
-@Controller('post')
-export class PostController {
-
+@Controller('reel')
+export class ReelController {
     constructor(
-        private readonly postServe: PostService
+        private readonly reelServe: ReelService
     ){}
 
     @Get()
     async fetchAll(){
-        return await this.postServe.getAllPost();
+        return await this.reelServe.getAllReel();
     }
 
     @UseGuards(JwtAuthGuard)
     @Get('user')
     async fetchPostsByUserId(@Request() request: any){
-        return await this.postServe.getPostsByUserId(request.user);
+        return await this.reelServe.getReelsByUserId(request.user);
     }
 
     @Post()
     async uploadPost(@Body() request: string){
-        return await this.postServe.createPost(request);
+        return await this.reelServe.createReel(request);
     }
 
     @Delete(':id')
     async deletPostByID(@Param('id') id: any){
-        return await this.postServe.deletePost(id);
+        return await this.reelServe.deleteReel(id);
     }
 
     @UseGuards(JwtAuthGuard)
     @Patch(':id/like')
     async updateLikes(@Param('id') id: string, @Req() request: any){
         // Call service method
-        return await this.postServe.toggleLike(id, request.user);
+        return await this.reelServe.toggleLike(id, request.user);
     }
 }
