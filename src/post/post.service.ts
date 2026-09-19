@@ -10,7 +10,7 @@ export class PostService {
         @InjectModel('Posts') private postModel: Model<Post>
     ){}
 
-    // 1. Create the Post...
+    // 1. Creating the Post...
     async createPost(request: any){
         try{
             let expiresAt: Date | null = null;
@@ -34,12 +34,14 @@ export class PostService {
         }
     }
 
-    // 2. Delete the Post
-    async deletePost(id: any){
-        return this.postModel.findByIdAndDelete(id);
+    // 2. Fetch the all Post..
+    async getAllPost(page = 1, limit = 100){
+        const skip = (page - 1) * limit;
+        return await this.postModel.find({type:'POST'}).sort({createdAt: -1}).skip(skip).limit(limit).exec();
     }
 
-    async getPostsByUserId(request: any, page = 1, limit = 10) {
+    // 3. Fetch by userId
+    async getPostsByUserId(request: any, page = 1, limit = 100) {
 
         const userId = request?.userId || request?.sub;
 
@@ -60,11 +62,12 @@ export class PostService {
         }
     }
 
-    async getAllPost(page = 1, limit = 10){
-        const skip = (page - 1) * limit;
-        return await this.postModel.find({type:'POST'}).sort({createdAt: -1}).skip(skip).limit(limit).exec();
+    // 4. Delete the Post
+    async deletePost(id: any){
+        return this.postModel.findByIdAndDelete(id);
     }
 
+    // 5. Update or patch the Likes and counts
     async toggleLike(postId: string, userRequest: any){
         const userId = userRequest?.userId || userRequest?.sub;
 
@@ -96,5 +99,16 @@ export class PostService {
                 likesCount: Math.max(0, updatedDoc.likesCount)
             };
         }
+    }
+
+    // 6. Update the comment counts..
+    async updateComments(post_Id: string){
+        return await this.postModel.findByIdAndUpdate(
+            post_Id,
+            {  
+                $inc:{commentsCount: 1}
+            },
+            {new: true}
+        ).exec();
     }
 }

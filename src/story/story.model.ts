@@ -39,49 +39,36 @@ export interface Audio {
 }
 //#endregion
 
-//#region Post Schema....
 export type ContentType = 'POST' | 'REEL' | 'STORY';
 
-export const ReelSchema = new mongoo.Schema({
-    username:       { type: String, required: true, lowercase: true, trim: true },
-    type:           { type: String, enum:['POST', 'REEL', 'STORY'], required: true, default: 'REEL'},
+export const StorySchema = new mongoo.Schema({
+    username:       {type: String, required: true},
+    type:           { type: String, enum:['POST', 'REEL', 'STORY'], required: true, default: 'STORY'},
     author:         { type: AuthorSchema, required: true },
     mediaUrl:       { type: String, required: true },
     mediaType:      { type: String, required: true, enum: ['image', 'video'], default: 'image' },
     audio:          { type: AudioSchema, default: null },
-    caption:        { type: String, default: null, maxlength: 2200 },
-    time:           { type: Date, default: Date.now },
-    likedBy:        [{ type: String }],
-    likesCount:     { type: Number, default: 0 },
-    commentsCount:  { type: Number, default: 0 },
-    repostsCount:   { type: Number, default: 0 },
-    sharesCount:    { type: Number, default: 0 },
-    isPlaying:      { type: Boolean, default: false},
-    // Story Expiration (automatically deletes story documents after 24h)
-    expiresAt:      { type: Date, default: null, index: { expires: 0 } }
-}, {
-    timestamps: true
-});
+    viewers:        [{ type: String, ref: 'User' }],
+    viewsCount:     {type: Number, default: 0 },
+    expiresAt:      {type: Date, default: () => new Date(Date.now() + 24 * 60 * 60 * 1000), index: { expires: 0 }},
+    status:         { type: String, enum: ['active', 'archived', 'deleted'], default: 'active'}
+},
+  { timestamps: true }
+);
 // Indexes for fast feed filtering
-ReelSchema.index({ type: 1, createdAt: -1 });
+StorySchema.index({ type: 1, createdAt: -1 });
 
-export interface Reel extends mongoo.Document{
+export interface Story extends mongoo.Document{
     username:       string;
     type:           ContentType;
     author:         Author;
     mediaUrl:       string;
     mediaType:      'image' | 'video';
     audio?:         Audio | null;
-    caption?:       string | null;
-    time?:          Date;
-    likedBy:        string[];
-    likesCount?:    number;
-    commentsCount?: number;
-    repostsCount?:  number;
-    sharesCount?:   number;    
-    isPlaying?:     boolean;
+    viewers:        string[];
+    viewsCount:     number;
     expiresAt?:     Date | null;
+    status:         string;
     createdAt?:     Date;
     updatedAt?:     Date;
 }
-//#endregion

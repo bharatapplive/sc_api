@@ -13,45 +13,20 @@ export class AuthController {
         private readonly authServe : AuthService
     ){}
 
+    // 1. User Registration from here.
     @Post('register')
     async createUser(@Body() request: any){
         return await this.authServe.userRegistration(request);
     }
 
-    @Post('login')
-    async fetchUser(@Body() body:{identity: string, password:string,}, @Res({ passthrough: true }) res:Response){
-        return await this.authServe.userLogin(body.identity, body.password, res);
-    }
-
-    @HttpCode(HttpStatus.OK)
-    @Post('logout')
-    async userLogout(@Res({ passthrough: true }) res:Response){
-        return await this.authServe.logOut(res);
-    }
-    
+    // 2. User verification by OTP
     @HttpCode(HttpStatus.OK)
     @Post('verify-otp')
     async verifyTheOtp(@Body() body: { userId: string; otpCode: string }) {
         return await this.authServe.verifyOtp(body);
     }
 
-    @UseGuards(JwtAuthGuard)
-    @Get('user')
-    async getUserById(@Request() request: any){
-        return await this.authServe.getRegistered(request.user);
-    }
-
-    @Get()
-    async getAllUser(){
-        return await this.authServe.getAllData();
-    }    
-    
-    @UseGuards(JwtAuthGuard)
-    @Get(':id')
-    async getUserByIdParam(@Param('id') id: string, @Req() request: any){
-        return await this.authServe.getRegisteredUser(id, request.user);
-    }
-
+    // 3. Upload User Profile...
     @Post(':id/avatar')
     @UseInterceptors(FileInterceptor('avatar', {
         storage: diskStorage({
@@ -84,4 +59,37 @@ export class AuthController {
             user: updatedUser,
         };
     }
+
+    // 4. User Login..
+    @Post('login')
+    async fetchUser(@Body() body:{identity: string, password:string,}, @Res({ passthrough: true }) res:Response){
+        return await this.authServe.userLogin(body.identity, body.password, res);
+    }
+
+    // 5. Fetch Single User...
+    @UseGuards(JwtAuthGuard)
+    @Get('user')
+    async getUser(@Request() request: any){
+        return await this.authServe.getSingleUsers(request.user);
+    }
+    
+    // 6. Fetch User by Id when id is on priority base..
+    @UseGuards(JwtAuthGuard)
+    @Get(':id')
+    async getUserByIdParam(@Param('id') id: string, @Req() request: any){
+        return await this.authServe.getUserByID(id, request.user);
+    }
+
+    // 7. Logout the current user..
+    @HttpCode(HttpStatus.OK)
+    @Post('logout')
+    async userLogout(@Res({ passthrough: true }) res:Response){
+        return await this.authServe.logOut(res);
+    }
+
+    // Default call to check users
+    @Get()
+    async getAllData(){
+        return await this.authServe.getAllData();
+    } 
 }

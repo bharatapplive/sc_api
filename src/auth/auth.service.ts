@@ -103,8 +103,23 @@ export class AuthService {
             throw new InternalServerErrorException('Error verifying OTP');
         }
     }
+    
+    // 3. Update the Profile image...
+    async uploadImage(userId: string, imagePath: string){
+        const updateAvatar = this.authModel.findByIdAndUpdate( 
+            userId, 
+            { avatarUrl:imagePath },
+            { returnDocument: 'after' }
+        ).exec();
 
-    // 3. Get Registered User..
+        if(!updateAvatar){
+            throw new NotFoundException('User not found');
+        }
+
+        return updateAvatar;
+    }
+
+    // 4. User Login..
     async userLogin(identity:string, password: string, res: Response){
         const user = await this.authModel.findOne({$or:[{email: identity}, {phoneNumber: identity}]});
 
@@ -137,21 +152,8 @@ export class AuthService {
         }
     }
 
-    // 4. LogOut request..
-    async logOut(response: Response){
-        response.clearCookie('JSON_WT', {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'lax',
-            path: '/',
-        });
-        return{
-            message: 'Logout successfully'
-        }
-    }
-    
-    // 4. Fetch the user by id..
-    async getRegistered(request: any){
+    // 5. Fetch the current user..
+    async getSingleUsers(request: any){
         // 1. Extract the user identity set by JwtStrategy
         const authUserID = request?.userId || request?.sub;
 
@@ -179,12 +181,8 @@ export class AuthService {
         }
     }
 
-    // 5. Fetch All user..
-    async getAllData(){
-        return await this.authModel.find();
-    }
-
-    async getRegisteredUser(id: string, userRequest: any) {
+    // 6. Fetch the user on priorty bases..
+    async getUserByID(id: string, userRequest: any) {
         // 1. Extract the user identity set by JwtStrategy
         const authUserID = userRequest?.userId || userRequest?.sub;
 
@@ -211,18 +209,21 @@ export class AuthService {
         }
     }
 
-    // 6. Update the Profile image...
-    async uploadImage(userId: string, imagePath: string){
-        const updateAvatar = this.authModel.findByIdAndUpdate( 
-            userId, 
-            { avatarUrl:imagePath },
-            { returnDocument: 'after' }
-        ).exec();
-
-        if(!updateAvatar){
-            throw new NotFoundException('User not found');
+    // 7. LogOut request..
+    async logOut(response: Response){
+        response.clearCookie('JSON_WT', {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax',
+            path: '/',
+        });
+        return{
+            message: 'Logout successfully'
         }
+    }
 
-        return updateAvatar;
+    // Default case...
+    async getAllData(){
+        return await this.authModel.find();
     }
 }

@@ -34,11 +34,13 @@ export class ReelService {
         }
     }
 
-    // 2. Delete the Post
-    async deleteReel(id: any){
-        return this.reelModel.findByIdAndDelete(id);
+    // 2. Fetch all reels for feed page
+    async getAllReel(page = 1, limit =10){
+        const skip = (page - 1) * limit;
+        return await this.reelModel.find({type:'REEL'}).sort({createdAt: -1}).skip(skip).limit(limit).exec();
     }
 
+    // 3. Fetch Reel by userID
     async getReelsByUserId(request: any, page = 1, limit = 10) {
 
         const userId = request?.userId || request?.sub;
@@ -60,11 +62,12 @@ export class ReelService {
         }
     }
 
-    async getAllReel(page = 1, limit =10){
-        const skip = (page - 1) * limit;
-        return await this.reelModel.find({type:'REEL'}).sort({createdAt: -1}).skip(skip).limit(limit).exec();
+    // 4. Delete the Post
+    async deleteReel(id: any){
+        return this.reelModel.findByIdAndDelete(id);
     }
 
+    // 5. Updating the likes count
     async toggleLike(postId: string, userRequest: any){
         const userId = userRequest?.userId || userRequest?.sub;
 
@@ -96,5 +99,16 @@ export class ReelService {
                 likesCount: Math.max(0, updatedDoc.likesCount)
             };
         }
+    }
+
+    // 5. Updating the comments count
+    async updateComments(post_Id: string){
+        return await this.reelModel.findByIdAndUpdate(
+            post_Id,
+            {  
+                $inc:{commentsCount: 1}
+            },
+            {new: true}
+        ).exec();
     }
 }
