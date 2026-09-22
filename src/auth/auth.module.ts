@@ -1,20 +1,29 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-//step 2
 import { JwtModule } from '@nestjs/jwt';
+
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
-import { AuthSchema } from './auth.model';
+
+import { User, UserSchema } from './schemas/user.schema/user.schema';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([{ name: 'Auth', schema: AuthSchema }]),
-    // step 3
+    MongooseModule.forFeature([
+      {
+        name: User.name,
+        schema: UserSchema,
+      },
+    ]),
+
     JwtModule.register({
-      secret: 'your-secret-key',
-      signOptions: { expiresIn: '1h' },
+      secret: 'social-circle-secret-key',
+      signOptions: {
+        expiresIn: '1h',
+      },
     }),
   ],
+
   controllers: [AuthController],
   providers: [AuthService],
 })

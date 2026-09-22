@@ -1,51 +1,98 @@
-import { Injectable } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
-import { AuthModel } from './auth.model';
+import {
+  BadRequestException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
+import { JwtService } from '@nestjs/jwt';
 import { Model } from 'mongoose';
+import * as bcrypt from 'bcrypt';
+
+import { User, UserDocument } from './schemas/user.schema/user.schema';
+import { RegisterDto } from './dto/register.dto/register.dto';
+import { LoginDto } from './dto/login.dto/login.dto';
 
 @Injectable()
 export class AuthService {
   constructor(
-    @InjectModel('Auth') private readonly authModel: Model<AuthModel>,
+    @InjectModel(User.name)
+    private readonly userModel: Model<UserDocument>,
+
     private readonly jwtService: JwtService,
   ) {}
 
-  async create(requestData: any): Promise<AuthModel> {
-    const createdAuth = new this.authModel({
-      ...requestData,
+  // =========================
+  // REGISTER
+  // =========================
+  async register(registerDto: RegisterDto) {
+    const { emailOrMobile, password } = registerDto;
+
+    const existingUser = await this.userModel.findOne({
+      emailOrMobile,
     });
 
-    return await createdAuth.save();
+    if (existingUser) {
+      throw new BadRequestException(
+        'User already registered',
+      );
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const user = await this.userModel.create({
+      emailOrMobile,
+      password: hashedPassword,
+    });
+
+    return {
+      message: 'Registration successful',
+      user: {
+        id: user._id,
+        emailOrMobile: user.emailOrMobile,
+      },
+    };
   }
 
-  async login(requestData: any) {
-    const user = await this.authModel.findOne({
-      mobile: requestData.mobile,
-      password: requestData.password,
+  // =========================
+  // LOGIN
+  // =========================
+  async login(loginDto: LoginDto) {
+    const { emailOrMobile, password } = loginDto;
+
+    const user = await this.userModel.findOne({
+      emailOrMobile,
     });
 
     if (!user) {
-      return null;
+      throw new UnauthorizedException(
+        'Invalid email/mobile or password',
+      );
     }
-//step 4
+
+    const passwordMatch = await bcrypt.compare(
+      password,
+      user.password,
+    );
+
+    if (!passwordMatch) {
+      throw new UnauthorizedException(
+        'Invalid email/mobile or password',
+      );
+    }
+
     const payload = {
-      sub: user._id,
-      mobile: user.mobile,
-      role: user.role,
+      sub: user._id.toString(),
+      emailOrMobile: user.emailOrMobile,
     };
-//step 5 created a token and return
+
+    const accessToken = this.jwtService.sign(payload);
+
     return {
-  
-      access_token: this.jwtService.sign(payload),
+      message: 'Login successful',
+      access_token: accessToken,
       user: {
-        _id: user._id,
-        mobile: user.mobile,
-        role: user.role,
-        userName: user.userName,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        email: user.email,
+        id: user._id,
+        emailOrMobile: user.emailOrMobile,
       },
     };
   }
