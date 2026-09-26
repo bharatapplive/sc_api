@@ -9,6 +9,7 @@ import { LoginModule } from './login/login.module';
 import { AccountModule } from './account/account.module';
 import { AuthModule } from './auth/auth.module';
 import { FeedModule } from './feed/feed.module';
+import { StoryModule } from './story/story.module';
 import { JwtAuthGuard } from './auth/jwt-auth.guard';
 
 @Module({
@@ -24,6 +25,7 @@ import { JwtAuthGuard } from './auth/jwt-auth.guard';
     AccountModule,
     AuthModule,
     FeedModule,
+    StoryModule,
   ],
   controllers: [AppController],
   providers: [

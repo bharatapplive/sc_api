@@ -7,6 +7,7 @@ export const AuthSchema = new mongoose.Schema({
   email: { type: String, required: false },
   mobile: { type: String, required: true, minlength: 10, maxLength: 10 },
   password: { type: String, required: true, minlength: 6 },
+  image: { type: String, required: false },
   role: {
     type: String,
     required: true,
@@ -26,5 +27,6 @@ export interface AuthModel extends mongoose.Document {
   password: string;
   role: string;
   isActive: boolean;
+  image: string;
   createdAt: Date;
 }

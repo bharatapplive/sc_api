@@ -3,7 +3,6 @@ import {
   Body,
   Controller,
   Post,
-  Req,
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
@@ -12,9 +11,8 @@ import { randomUUID } from 'crypto';
 import { existsSync, mkdirSync } from 'fs';
 import { diskStorage } from 'multer';
 import { extname, join } from 'path';
-import { Request } from 'express';
-import { AuthService } from './auth.service';
-import { Public } from './public.decorator';
+import { StoryService } from './story.service';
+import { StoryModel } from './story.model';
 
 const imageUploadDirectory = join(process.cwd(), 'uploads', 'images');
 
@@ -22,37 +20,16 @@ if (!existsSync(imageUploadDirectory)) {
   mkdirSync(imageUploadDirectory, { recursive: true });
 }
 
-interface AuthenticatedRequest extends Request {
-  user?: {
-    sub?: string;
-  };
-}
-
-
 interface UploadedImageFile {
   filename: string;
 }
 
-@Controller('auth')
-export class AuthController {
-    // step 3 DI
-  constructor(private readonly authService: AuthService) {}
 
-  
-  // step 4 create api for user registration
-  @Post('create')
-  @Public()
-  async create(@Body() requestData: any) {
-    return this.authService.create(requestData);
-  }
+@Controller('story')
+export class StoryController {
+  constructor(private readonly storyService: StoryService) {}
 
-  @Post('login')
-   @Public()
-  async login(@Body() requestData: any) {
-    return this.authService.login(requestData);
-  }
-
-  @Post('image')
+  @Post()
   @UseInterceptors(
     FileInterceptor('image', {
       storage: diskStorage({
@@ -67,32 +44,33 @@ export class AuthController {
       },
     }),
   )
-  async saveImage(
+  async createStory(
     @UploadedFile() file: UploadedImageFile,
-    @Req() request: AuthenticatedRequest,
-  ) {
+    @Body() requestData: Omit<StoryModel, 'image'>,
+  ): Promise<StoryModel> {
     if (!file) {
       throw new BadRequestException('An image file is required');
     }
-
-    const userId = request.user?.sub;
-
-    if (!userId) {
-      throw new BadRequestException('Authenticated user was not found');
-    }
-
+//1. we are saving image in upload /images folder
     const imagePath = `uploads/images/${file.filename}`;
-    const user = await this.authService.saveImage(userId, imagePath);
 
-    if (!user) {
-      throw new BadRequestException('User was not found');
-    }
-
-    return {
-      message: 'Image saved successfully',
+    const storyData = {
+      ...requestData,
+    // 2. we are saving image path in story model/ table
       image: imagePath,
-      user,
-    };
-  }
+    } as StoryModel;
 
+    //3 . we are calling story service to save story data in database
+    return this.storyService.createStory(storyData);
+  }
 }
+
+
+// post
+// post ('create-story')// localhost:3000/story/create-story route for creating a story with image upload
+// get
+// get route for fetching stories
+// put
+// put route for updating a story
+// delete
+// delete route for deleting a story

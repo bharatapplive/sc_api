@@ -19,6 +19,16 @@ export class AuthService {
     return await createdAuth.save();
   }
 
+  async saveImage(userId: string, imagePath: string): Promise<AuthModel> {
+    return this.authModel
+      .findByIdAndUpdate(
+        userId,
+        { image: imagePath },
+        { new: true, runValidators: true },
+      )
+      .exec();
+  }
+
   async login(requestData: any) {
     const user = await this.authModel.findOne({
       mobile: requestData.mobile,
