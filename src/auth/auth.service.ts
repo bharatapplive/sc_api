@@ -5,6 +5,7 @@ import * as bcrypt from 'bcryptjs';
 import { Auth } from './auth.model';
 import { JwtService } from '@nestjs/jwt'; // 1. Import JwtService
 import { Response, Request } from 'express';
+import { use } from 'passport';
 
 @Injectable()
 export class AuthService {
@@ -46,6 +47,8 @@ export class AuthService {
                 password: hashedPassword,
                 avatarUrl: request.avatarUrl,
                 bio: request.bio,
+                links: request.links,
+                gender: request.gender,
                 isVerified: false,
                 otpCode: generatedOtp,
                 otpExpireAt: otpExpiry,
@@ -197,7 +200,7 @@ export class AuthService {
                 }
 
                 // 4. Omit sensitive internal fields before sending the response
-                const { password, otpCode, otpExpireAt, phoneNumber, isVerified, email, __v, _id, ...userData } = user.toObject();
+                const { password, otpCode, otpExpireAt, phoneNumber, isVerified, email, __v,  ...userData } = user.toObject();
                 return userData;
 
             }catch(error){
@@ -222,8 +225,28 @@ export class AuthService {
         }
     }
 
+    // 8. Update UserData..
+    async updateUserProfile(id:string, data: any){
+        // Validate if the ID string is a valid MongoDB ObjectId
+        if (!id) {
+            throw new BadRequestException(`Invalid Mongo User ID format: ${id}`);
+        }
+
+        const userUpdate = await this.authModel.findByIdAndUpdate(
+            id,
+            { $set: data},
+            {new: true, runValidators: true}
+        );
+
+        if(!userUpdate){
+            throw new NotFoundException('User Profile not found');
+        }
+
+        return userUpdate;
+    }
+
     // Default case...
     async getAllData(){
-        return await this.authModel.find();
+        return await this.authModel.find().exec();
     }
 }

@@ -111,4 +111,27 @@ export class PostService {
             {new: true}
         ).exec();
     }
+
+    // 7. Update Post Author..
+    async updateAuthor(userID: any, updateData:  any){
+
+        if(!userID){
+            throw new BadRequestException(`Invalid Mongo User ID format: ${userID}`);
+        }
+
+        const updatePayload: Record<string, any> = {};
+        if (updateData.authorName) updatePayload['author.authorName'] = updateData.authorName;
+        if (updateData.avatarUrl) updatePayload['author.avatarUrl'] = updateData.avatarUrl;
+
+        return await this.postModel.updateMany(
+            { 'author.userId': userID }, // Fixed case sensitive key: userId
+            { $set: updatePayload }
+        ).exec();
+    }
+
+    // 8. Get All Story..
+    async getAllStory(page = 1, limit = 100){
+        const skip = (page - 1) * limit;
+        return await this.postModel.find({type:'STORY'}).sort({createdAt: -1}).skip(skip).limit(limit).exec();
+    }
 }

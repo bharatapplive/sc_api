@@ -9,7 +9,6 @@ import { JwtModule } from '@nestjs/jwt';
 import { JwtStrategy } from './jwt-auth/jwt.strategy';
 import { JwtAuthGuard } from './jwt-auth/jwt-auth.guard';
 import { ReelModule } from './reel/reel.module';
-import { StoryModule } from './story/story.module';
 import { CommentsModule } from './comments/comments.module';
 
 @Module({
@@ -27,7 +26,6 @@ import { CommentsModule } from './comments/comments.module';
     PostModule,
     FollowModule,
     ReelModule,
-    StoryModule,
     CommentsModule,
   ],
   controllers: [AppController],

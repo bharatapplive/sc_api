@@ -16,25 +16,31 @@ export class PostController {
     }
 
     // 2. Fetch all post..
-    @Get()
-    async fetchAll(){
+    @Get('user-post')
+    async fetchAllPost(){
         return await this.postServe.getAllPost();
     }
+    
+    // 3. Fetch all Story..
+    @Get('story')
+    async fetchAllStory(){
+        return await this.postServe.getAllStory();
+    }
 
-    // 3. Fetch Post by userID.
+    // 4. Fetch Post by userID.
     @UseGuards(JwtAuthGuard)
     @Get('user')
     async fetchPostsByUserId(@Request() request: any){
         return await this.postServe.getPostsByUserId(request.user);
     }
 
-    // 4. Delete the post as per requirement..
+    // 5. Delete the post as per requirement..
     @Delete(':id')
     async deletPostByID(@Param('id') id: any){
         return await this.postServe.deletePost(id);
     }
 
-    // 5. Patching or updating Likes..
+    // 6. Patching or updating Likes..
     @UseGuards(JwtAuthGuard)
     @Patch(':id/like')
     async updateLikes(@Param('id') id: string, @Req() request: any){
@@ -42,9 +48,22 @@ export class PostController {
         return await this.postServe.toggleLike(id, request.user);
     }
 
-    // 6. Patching or updating commentcount..
+    // 7. Patching or updating commentcount..
     @Patch(':id/comment')
     async commentUpdate(@Param('id') post_Id: string){
         return await this.postServe.updateComments(post_Id);
+    }
+
+    // 8. Patching or updating author details...
+    @UseGuards(JwtAuthGuard)
+    @Patch('author')
+    async updatePostAuthor(@Request() request: any, @Body() updateData: any){
+        const userID = request.user?._id ||request.user?.id || request.user?.sub;
+
+        if(!userID){
+            throw new BadRequestException('User ID not found in request context.');
+        }
+
+        return await this.postServe.updateAuthor(userID, updateData);
     }
 }

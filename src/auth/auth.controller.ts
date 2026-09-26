@@ -1,4 +1,4 @@
-import { BadRequestException, UseGuards, Body, Controller, Get, HttpCode, HttpStatus, Param, Post, Req, Res, UploadedFile, UseInterceptors, Request } from '@nestjs/common';
+import { BadRequestException, UseGuards, Body, Controller, Get, HttpCode, HttpStatus, Param, Post, Req, Res, UploadedFile, UseInterceptors, Request, Patch, Query } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
@@ -85,6 +85,19 @@ export class AuthController {
     @Post('logout')
     async userLogout(@Res({ passthrough: true }) res:Response){
         return await this.authServe.logOut(res);
+    }
+
+    // 8.Update user Profile
+    @UseGuards(JwtAuthGuard)
+    @Patch('user')
+    async updateUser(@Request() request: any, @Body() userRequest: any){
+        const userId = request.user?._id || request.user?.id || request.user?.sub;
+        
+        if (!userId) {
+            throw new BadRequestException('User ID not found in request context.');
+        }
+
+        return await this.authServe.updateUserProfile(userId, userRequest);
     }
 
     // Default call to check users
