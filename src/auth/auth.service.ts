@@ -29,6 +29,15 @@ export class AuthService {
       .exec();
   }
 
+  async findAllExcept(mobile: string) {
+    // it will return all users except the current user based on their mobile number
+    return this.authModel
+    // $ne stands for "not equal" in MongoDB queries. This query will return all users whose mobile number is not equal to the provided mobile number.
+      .find({ mobile: { $ne: mobile } })
+      .select('-password')
+      .exec();
+  }
+
   async login(requestData: any) {
     const user = await this.authModel.findOne({
       mobile: requestData.mobile,

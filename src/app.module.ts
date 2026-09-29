@@ -10,6 +10,7 @@ import { AccountModule } from './account/account.module';
 import { AuthModule } from './auth/auth.module';
 import { FeedModule } from './feed/feed.module';
 import { StoryModule } from './story/story.module';
+import { DirectMessageModule } from './direct-message/direct-message.module';
 import { JwtAuthGuard } from './auth/jwt-auth.guard';
 
 @Module({
@@ -25,7 +26,8 @@ import { JwtAuthGuard } from './auth/jwt-auth.guard';
     AccountModule,
     AuthModule,
     FeedModule,
-    StoryModule,
+    StoryModule,    
+    DirectMessageModule,// // step 1 direct message 
   ],
   controllers: [AppController],
   providers: [

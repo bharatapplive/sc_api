@@ -52,6 +52,17 @@ export class AuthController {
     return this.authService.login(requestData);
   }
 
+  //  created endpoint tp fetch all users except the current user based on their mobile number
+  // localhost:3000/auth/users
+  @Post('users')
+  findUsersExceptCurrent(@Body('mobile') currentMobile: string) {
+    if (!currentMobile) {
+      throw new BadRequestException('Current user mobile number is required');
+    }
+
+    return this.authService.findAllExcept(currentMobile);
+  }
+
   @Post('image')
   @UseInterceptors(
     FileInterceptor('image', {
