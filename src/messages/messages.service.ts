@@ -3,12 +3,14 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Message } from './message.schema';
 import { UsersService } from '../users/users.service';
+import { ChatGateway } from './chat.gateway';
 
 @Injectable()
 export class MessagesService {
     constructor(
         @InjectModel(Message.name) private messageModel: Model<Message>,
         private usersService: UsersService,
+        private chatGateway: ChatGateway,
     ) { }
 
     async send(fromId: string, toId: string, text: string) {
@@ -20,10 +22,15 @@ export class MessagesService {
         const receiver = await this.usersService.findById(toId);
         if (!receiver) throw new NotFoundException('User not found');
 
-        return this.messageModel.create({ from: fromId, to: toId, text: clean });
+        const message = await this.messageModel.create({ from: fromId, to: toId, text: clean });
+
+        // real-time: bhejne wale ka naam bhi saath bhejo (notification ke liye)
+        const sender = await this.usersService.findPublic(fromId);
+        this.chatGateway.notifyNewMessage({ ...message.toJSON(), sender: sender?.toJSON() });
+
+        return message;
     }
 
-    // do logon ki chat (purane pehle). Jo messages mujhe aaye the, unhe "read" mark karo
     async conversation(meId: string, otherId: string, before?: string, limit = 50) {
         if (!Types.ObjectId.isValid(otherId)) throw new NotFoundException('User not found');
         const me = new Types.ObjectId(meId);
@@ -31,21 +38,30 @@ export class MessagesService {
 
         const filter: any = { $or: [{ from: me, to: other }, { from: other, to: me }] };
         if (before && !isNaN(Date.parse(before))) {
-            filter.createdAt = { $lt: new Date(before) }; // purane messages load karne ke liye
+            filter.createdAt = { $lt: new Date(before) };
         }
 
         const messages = await this.messageModel.find(filter).sort({ createdAt: -1 }).limit(limit).lean();
-        await this.messageModel.updateMany({ from: other, to: me, read: false }, { read: true });
+        await this.markRead(meId, otherId);
         return messages.reverse();
     }
 
-    // chats ki list: har insaan ke saath aakhri message + kitne unread
+    // otherId ke bheje hue messages "read" karo, aur usse real-time batao
+    async markRead(meId: string, otherId: string) {
+        if (!Types.ObjectId.isValid(otherId)) throw new NotFoundException('User not found');
+        const result = await this.messageModel.updateMany(
+            { from: new Types.ObjectId(otherId), to: new Types.ObjectId(meId), read: false },
+            { read: true },
+        );
+        if (result.modifiedCount > 0) this.chatGateway.notifyRead(meId, otherId);
+        return { updated: result.modifiedCount };
+    }
+
     conversations(meId: string) {
         const me = new Types.ObjectId(meId);
         return this.messageModel.aggregate([
             { $match: { $or: [{ from: me }, { to: me }] } },
             { $sort: { createdAt: -1 } },
-            // "doosra insaan" kaun hai: agar maine bheja toh receiver, warna sender
             { $addFields: { other: { $cond: [{ $eq: ['$from', me] }, '$to', '$from'] } } },
             {
                 $group: {

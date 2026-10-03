@@ -1,6 +1,6 @@
 import {
     BadRequestException, Body, ConflictException, Controller, Get,
-    NotFoundException, Patch, Post, Query, Req, UploadedFile, UseInterceptors,
+    NotFoundException, Param, Patch, Post, Query, Req, UploadedFile, UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
@@ -18,6 +18,7 @@ export class UsersController {
         return this.usersService.search(req.user.sub, search);
     }
 
+    // GET /users/me — apni profile
     @Get('me')
     async me(@Req() req: any) {
         const user = await this.usersService.findById(req.user.sub);
@@ -25,6 +26,7 @@ export class UsersController {
         return user;
     }
 
+    // PATCH /users/me — profile update
     @Patch('me')
     async updateMe(@Req() req: any, @Body() dto: UpdateProfileDto) {
         if (dto?.userName) dto.userName = dto.userName.toLowerCase();
@@ -38,6 +40,7 @@ export class UsersController {
         }
     }
 
+    // POST /users/me/photo — profile photo
     @Post('me/photo')
     @UseInterceptors(
         FileInterceptor('photo', {
@@ -56,5 +59,14 @@ export class UsersController {
     async uploadPhoto(@Req() req: any, @UploadedFile() file: Express.Multer.File) {
         if (!file) throw new BadRequestException('Please choose an image');
         return this.usersService.updateProfile(req.user.sub, { image: `/uploads/${file.filename}` });
+    }
+
+    // GET /users/:id — kisi user ki public profile
+    // (sabse neeche, taaki "me" wale routes pehle match hon)
+    @Get(':id')
+    async getUser(@Param('id') id: string) {
+        const user = await this.usersService.findPublic(id);
+        if (!user) throw new NotFoundException('User not found');
+        return user;
     }
 }

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { User } from './user.schema';
 
 @Injectable()
@@ -64,5 +64,11 @@ export class UsersService {
             .select('firstName lastName userName image')
             .sort({ firstName: 1 })
             .limit(20);
+    }
+
+    // kisi bhi user ki public details (email/mobile nahi)
+    findPublic(id: string) {
+        if (!Types.ObjectId.isValid(id)) return null;
+        return this.userModel.findById(id).select('firstName lastName userName image bio');
     }
 }
