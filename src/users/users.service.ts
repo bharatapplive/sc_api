@@ -48,4 +48,21 @@ export class UsersService {
             runValidators: true,
         });
     }
+
+    // doosre users dhoondo (khud ko chhod ke), naam ya username se
+    search(currentUserId: string, query: string) {
+        const filter: any = { _id: { $ne: currentUserId } };
+        const q = query.trim();
+        if (q) {
+            // special characters escape karo, warna koi regex se server slow kar sakta hai
+            const safe = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            const re = new RegExp(safe, 'i');
+            filter.$or = [{ firstName: re }, { lastName: re }, { userName: re }];
+        }
+        return this.userModel
+            .find(filter)
+            .select('firstName lastName userName image')
+            .sort({ firstName: 1 })
+            .limit(20);
+    }
 }

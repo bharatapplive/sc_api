@@ -7,6 +7,7 @@ import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { PostsModule } from './posts/posts.module';
 import { StoriesModule } from './stories/stories.module';
+import { MessagesModule } from './messages/messages.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { StoriesModule } from './stories/stories.module';
     AuthModule,
     PostsModule,
     StoriesModule,
+    MessagesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
