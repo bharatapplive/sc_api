@@ -41,4 +41,11 @@ export class UsersService {
     findById(id: string) {
         return this.userModel.findById(id);
     }
+
+    updateProfile(id: string, data: Partial<User>) {
+        return this.userModel.findByIdAndUpdate(id, data, {
+            returnDocument: 'after',
+            runValidators: true,
+        });
+    }
 }
