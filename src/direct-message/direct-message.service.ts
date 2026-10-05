@@ -28,11 +28,11 @@ export class DirectMessageService {
         }
     }
 
-    async getRoomMessage(recId: string){
+    async getRoomMessage(roomId: string){
         try{
-            if(!recId) return [];
+            if(!roomId) return [];
         
-            const message = await this.directMessage.find({receiverId: String(recId)}).exec()
+            const message = await this.directMessage.find({roomId: String(roomId)}).exec()
             return message;
         }
         catch (error) {
@@ -52,12 +52,12 @@ export class DirectMessageService {
         }
     }
 
-    async markAsRead(userId: string){
+    async markAsRead(roomId: string, userId: string){
         try{
-            if( !userId) throw new BadRequestException('Room ID and User ID are required');
+            if(!roomId || !userId) throw new BadRequestException('Room ID and User ID are required');
             
             const result = await this.directMessage.updateMany(
-                { readBy:{$ne: userId}},
+                { roomId: roomId, readBy:{$ne: userId}},
                 { $addToSet:{readBy: userId}}
             );
 

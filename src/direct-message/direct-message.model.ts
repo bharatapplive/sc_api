@@ -1,6 +1,8 @@
 import * as mongoo from 'mongoose'
 
 export const DirectMessageSchema = new mongoo.Schema({
+    
+    roomId: { type: String, required: true, index: true },
     senderId:           { type: String, required: true, index: true },
     senderFirstName:    { type: String, required: true, index: true },
     senderLastName:     { type: String, required: true, index: true },
@@ -16,6 +18,7 @@ export const DirectMessageSchema = new mongoo.Schema({
 });
 
 export interface DirectMessage extends mongoo.Document{
+    roomId:             string;
     senderId:           string | number | null;
     senderFirstName:    string | null;
     senderLastName:     string | null;
