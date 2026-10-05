@@ -13,10 +13,9 @@ export class DirectMessageService {
     async createMessage(message: any){
         try{
             // Extract user ID string for the readBy array
-            const senderUserId = message.senderId?.userId || message.senderId;
             const newMessage = new this.directMessage({
                 ...message,
-                readBy: senderUserId ? [senderUserId] : [],
+                readBy: message.senderId
             });
 
             return await newMessage.save();
@@ -29,11 +28,11 @@ export class DirectMessageService {
         }
     }
 
-    async getRoomMessage(roomId: string){
+    async getRoomMessage(recId: string){
         try{
-            if(!roomId) return [];
+            if(!recId) return [];
         
-            const message = await this.directMessage.find({roomId: String(roomId)}).exec()
+            const message = await this.directMessage.find({receiverId: String(recId)}).exec()
             return message;
         }
         catch (error) {
@@ -44,20 +43,7 @@ export class DirectMessageService {
 
     async getAllRooms(){
         try{
-            const rooms = await this.directMessage.aggregate([
-                {
-                    $sort: { createdAt: 1 } // Sort by createdAt in descending order
-                },
-                {
-                    $group: {
-                        _id: "$roomId",
-                        lastMessage: { $last: "$$ROOT" }
-                    }
-                },
-                {
-                    $sort: { "lastMessage.createdAt": -1 }
-                }
-            ]);
+            const rooms = await this.directMessage.find();
             return rooms;
         }
         catch (error) {
@@ -66,12 +52,12 @@ export class DirectMessageService {
         }
     }
 
-    async markAsRead(roomId: string, userId: string){
+    async markAsRead(userId: string){
         try{
-            if(!roomId || !userId) throw new BadRequestException('Room ID and User ID are required');
+            if( !userId) throw new BadRequestException('Room ID and User ID are required');
             
             const result = await this.directMessage.updateMany(
-                { roomId: roomId, readBy:{$ne: userId}},
+                { readBy:{$ne: userId}},
                 { $addToSet:{readBy: userId}}
             );
 

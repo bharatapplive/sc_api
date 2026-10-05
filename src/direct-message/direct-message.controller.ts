@@ -26,10 +26,10 @@ export class DirectMessageController {
         }
     }
 
-    @Patch('rooms/:roomId/read')
-    async getRoomMessages(@Param('roomId') roomId: string, @Body('userId') userId: string){
+    @Patch('rooms/:recID/read')
+    async getRoomMessages(@Param('recID') recID: string, @Body('userId') userId: string){
         try{
-            return await this.directServe.markAsRead(roomId, userId);
+            return await this.directServe.markAsRead(userId);
         } catch (error) {
             console.error('Controller Error on markAsRead:', error);
         }

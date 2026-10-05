@@ -3,10 +3,7 @@ import { WebSocketGateway, WebSocketServer, SubscribeMessage, MessageBody,
   WsException} from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { JwtService } from '@nestjs/jwt';
-import { UseGuards } from '@nestjs/common';
-import { WsJwtGuard } from 'src/jwt-auth/ws-jwt.guard';
 import { DirectMessageService } from './direct-message.service';
-import { Author } from './direct-message.model';
 
 interface AuthenticatedSocket extends Socket {
   user?: any;
@@ -56,41 +53,43 @@ export class DirectMessageGateway implements OnGatewayConnection, OnGatewayDisco
   // --- PRIVATE ROOM MANAGEMENT ---
 
   @SubscribeMessage('joinRoom')
-  async handleJoinRoom(@ConnectedSocket() client: AuthenticatedSocket, @MessageBody() data:{roomId: string; userId: string}){
-    if(!data.roomId) return;
-    client.join(data.roomId);
-    await this.directServe.markAsRead(data.roomId, data.userId);
-
-    client.to(data.roomId).emit('userJoined', {
-      userId: data.userId,
-      message: `User joined room ${data.roomId}`
-    });
+  async handleJoinRoom(@ConnectedSocket() client: AuthenticatedSocket, @MessageBody() data:{userId: string}){
+    if(!data) return;
+    await this.directServe.markAsRead(data.userId);
   }
 
   // Listen for messages emitted from Ionic
-  @UseGuards(WsJwtGuard)
   @SubscribeMessage('sendPrivateMessage')
   async handlePrivateMessage(
-    @MessageBody() payload: { roomId: string; senderId: Author; text: string; messageType?: string },
+    @MessageBody() payload: { 
+        senderId:           string;
+        senderFirstName:    string;
+        senderLastName:     string;
+        senderEmail:        string;
+        senderUserName:     string;
+        receiverId:         string;
+        receiverFirstName:  string;
+        receiverLastName:   string;
+        receiverEmail:      string;
+        receiverUserName:   string;
+        message:            string;
+    },
   ) {
     try{
       // 1. Validate payload structure
-      if (!payload.roomId || !payload.senderId) {
+      if (!payload) {
         throw new WsException('Missing roomID or senderId in payload');
       }
 
       // 2. Map payload keys to match DirectMessage interface/schema keys exactly
       const messageData = {
-        roomId: payload.roomId, // Note: lowercase 'd'
-        senderId: payload.senderId,
-        text: payload.text,
-        messageType: payload.messageType || 'text',
+        ...payload,
       };
 
       // 3. Save to database
       const saveMessage = await this.directServe.createMessage(messageData);
 
-      this.server.to(payload.roomId).emit('newMessage', saveMessage);
+      this.server.to(payload.receiverId).emit('newMessage', saveMessage);
       return saveMessage;
     }
     catch(err){
