@@ -53,15 +53,22 @@ export class DirectMessageGateway implements OnGatewayConnection, OnGatewayDisco
   // --- PRIVATE ROOM MANAGEMENT ---
 
   @SubscribeMessage('joinRoom')
-  async handleJoinRoom(@ConnectedSocket() client: AuthenticatedSocket, @MessageBody() data:{userId: string}){
-    if(!data) return;
-    await this.directServe.markAsRead(data.userId);
+  async handleJoinRoom(@ConnectedSocket() client: AuthenticatedSocket, @MessageBody() data:{roomId: string; userId: string}){
+   if(!data.roomId) return;
+    client.join(data.roomId);
+    await this.directServe.markAsRead(data.roomId, data.userId);
+
+    client.to(data.roomId).emit('userJoined', {
+      userId: data.userId,
+      message: `User joined room ${data.roomId}`
+    });
   }
 
   // Listen for messages emitted from Ionic
   @SubscribeMessage('sendPrivateMessage')
   async handlePrivateMessage(
     @MessageBody() payload: { 
+        roomId:             string;
         senderId:           string;
         senderFirstName:    string;
         senderLastName:     string;
@@ -77,7 +84,7 @@ export class DirectMessageGateway implements OnGatewayConnection, OnGatewayDisco
   ) {
     try{
       // 1. Validate payload structure
-      if (!payload) {
+      if (!payload.roomId || !payload.senderId) {
         throw new WsException('Missing roomID or senderId in payload');
       }
 

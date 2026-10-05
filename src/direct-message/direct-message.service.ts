@@ -30,11 +30,11 @@ export class DirectMessageService {
     }
 
     // Step 2. Call the message
-    async getMessage(receiverID: string){
+    async getRoomMessage(roomId: string){
         try{
-            if(!receiverID) return [];
+            if(!roomId) return [];
         
-            const message = await this.directMessage.find({receiverId: String(receiverID)}).exec()
+            const message = await this.directMessage.find({roomId: String(roomId)}).exec()
             return message;
         }
         catch (error) {
@@ -45,7 +45,20 @@ export class DirectMessageService {
 
     async getAllRooms(){
         try{
-            const rooms = await this.directMessage.find();
+            const rooms = await this.directMessage.aggregate([
+                {
+                    $sort: { createdAt: 1 } // Sort by createdAt in descending order
+                },
+                {
+                    $group: {
+                        _id: "$roomId",
+                        lastMessage: { $last: "$$ROOT" }
+                    }
+                },
+                {
+                    $sort: { "lastMessage.createdAt": -1 }
+                }
+            ]);
             return rooms;
         }
         catch (error) {
@@ -54,12 +67,12 @@ export class DirectMessageService {
         }
     }
 
-    async markAsRead(userId: string){
+    async markAsRead(roomId: string, userId: string){
         try{
-            if(!userId) throw new BadRequestException('Room ID and User ID are required');
+            if(!roomId || !userId) throw new BadRequestException('Room ID and User ID are required');
             
             const result = await this.directMessage.updateMany(
-                { readBy:{$ne: userId}},
+                { roomId: roomId, readBy:{$ne: userId}},
                 { $addToSet:{readBy: userId}}
             );
 
@@ -68,6 +81,17 @@ export class DirectMessageService {
         catch (error) {
             console.error('Error marking messages as read:', error);
             throw new InternalServerErrorException('Failed to mark messages as read');
+        }
+    }
+
+    async deleteRoomMessages(roomId: string){
+        try{
+            const results = await this.directMessage.deleteMany({roomId: String(roomId)});
+            return results.deletedCount;
+        }
+        catch (error) {
+            console.error('Error deleting room messages:', error);
+            throw new InternalServerErrorException('Failed to delete messages');
         }
     }
 }
