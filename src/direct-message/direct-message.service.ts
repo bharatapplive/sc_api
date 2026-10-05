@@ -45,20 +45,7 @@ export class DirectMessageService {
 
     async getAllRooms(){
         try{
-            const rooms = await this.directMessage.aggregate([
-                {
-                    $sort: { createdAt: 1 } // Sort by createdAt in descending order
-                },
-                {
-                    $group: {
-                        _id: "$roomId",
-                        lastMessage: { $last: "$$ROOT" }
-                    }
-                },
-                {
-                    $sort: { "lastMessage.createdAt": -1 }
-                }
-            ]);
+            const rooms = await this.directMessage.find();
             return rooms;
         }
         catch (error) {
