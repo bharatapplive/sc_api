@@ -47,13 +47,15 @@ export class AuthService {
     if (!user) {
       return null;
     }
-//step 4
+    
+    //step 4
     const payload = {
       sub: user._id,
       mobile: user.mobile,
       role: user.role,
     };
-//step 5 created a token and return
+    
+    //step 5 created a token and return
     return {
   
       access_token: this.jwtService.sign(payload),
