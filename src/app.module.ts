@@ -5,6 +5,8 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { CloudinaryModule } from './cloudinary/cloudinary.module';
+import { PostModule } from './post/post.module';
+import { ChatModule } from './chat/chat.module';
 
 @Module({
   imports: [
@@ -14,6 +16,8 @@ import { CloudinaryModule } from './cloudinary/cloudinary.module';
     }),
     AuthModule,
     CloudinaryModule,
+    PostModule,
+    ChatModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -14,6 +14,10 @@ export const AuthSchema = new mongoose.Schema({
     default: 'user',
   },
   avatar: { type: String, required: false },
+  bio: { type: String, required: false, default: '' },
+  website: { type: String, required: false, default: '' },
+  category: { type: String, required: false, default: '' },
+  isProfileComplete: { type: Boolean, required: true, default: false },
   active: { type: Boolean, required: true, default: true },
   createdAt: { type: Date, default: Date.now },
 });
@@ -26,7 +30,12 @@ export interface AuthModel extends mongoose.Document {
   mobile: string;
   password: string;
   avatar?: string;
+  bio?: string;
+  website?: string;
+  category?: string;
+  isProfileComplete: boolean;
   role: string;
   active: boolean;
   createdAt: Date;
 }
+

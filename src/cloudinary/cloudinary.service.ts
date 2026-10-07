@@ -4,6 +4,10 @@ import { v2 as cloudinary, UploadApiResponse, UploadApiErrorResponse } from 'clo
 @Injectable()
 export class CloudinaryService {
   constructor() {
+    this.configure();
+  }
+
+  private configure() {
     cloudinary.config({
       cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
       api_key: process.env.CLOUDINARY_API_KEY,
@@ -25,7 +29,10 @@ export class CloudinaryService {
       return fileStr;
     }
 
+    this.configure();
+
     try {
+      console.log(`[Cloudinary] Uploading image to folder '${folder}'...`);
       const result: UploadApiResponse = await cloudinary.uploader.upload(fileStr, {
         folder,
         resource_type: 'image',
@@ -33,11 +40,13 @@ export class CloudinaryService {
           { quality: 'auto', fetch_format: 'auto' }
         ]
       });
+      console.log(`[Cloudinary] Upload successful! URL: ${result.secure_url}`);
       return result.secure_url;
-    } catch (error) {
-      console.error('Cloudinary upload error:', error);
-      // Fall back to original string if upload fails
+    } catch (error: any) {
+      console.error('[Cloudinary] Upload failed:', error?.message || error);
+      // Fall back to original string so the image is still saved to MongoDB
       return fileStr;
     }
   }
 }
+
