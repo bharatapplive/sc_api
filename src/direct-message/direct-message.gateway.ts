@@ -54,14 +54,30 @@ export class DirectMessageGateway implements OnGatewayConnection, OnGatewayDisco
 
   @SubscribeMessage('joinRoom')
   async handleJoinRoom(@ConnectedSocket() client: AuthenticatedSocket, @MessageBody() data:{roomId: string; userId: string}){
-   if(!data.roomId) return;
-    client.join(data.roomId);
-    await this.directServe.markAsRead(data.roomId, data.userId);
+    if (!data?.roomId) {
+      throw new WsException('Room ID is required.');
+    }
 
+    const currentUserId = client.user?.sub || client.user?.userId || client.user?._id;
+
+    // Basic security check: Ensure current authenticated user is part of the room ID
+    if (currentUserId && !data.roomId.includes(currentUserId.toString())) {
+      throw new WsException('Unauthorized: You are not a participant of this room.');
+    }
+
+    await client.join(data.roomId);
+    if (data.userId) {
+      await this.directServe.markAsRead(data.roomId, data.userId);
+    }
+
+    // Broadcast user joined event to other members in the room
     client.to(data.roomId).emit('userJoined', {
-      userId: data.userId,
-      message: `User joined room ${data.roomId}`
+      userId: data.userId || currentUserId,
+      roomId: data.roomId,
+      message: `User joined room ${data.roomId}`,
     });
+
+    return { status: 'success', roomId: data.roomId };
   }
 
   // Listen for messages emitted from Ionic
@@ -96,7 +112,7 @@ export class DirectMessageGateway implements OnGatewayConnection, OnGatewayDisco
       // 3. Save to database
       const saveMessage = await this.directServe.createMessage(messageData);
 
-      this.server.to(payload.receiverId).emit('newMessage', saveMessage);
+      this.server.to(payload.roomId).emit('newMessage', saveMessage);
       return saveMessage;
     }
     catch(err){
